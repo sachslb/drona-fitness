@@ -101,7 +101,7 @@ function About() {
               Whether you're starting your fitness journey or
               pushing towards your next personal record, we give
               you the environment, equipment and expertise to
-              become stronger.
+              become stronger. mmmmmmmmmmmmmmmm
             </p>
 
             {/* Features */}
