@@ -16,7 +16,7 @@ function App() {
       <Hero />
       <Programs />
       <Trainers />
-      <Membership />
+      {/* <Membership /> */}
       <Testimonials />
       <Gallery />
       <About />
