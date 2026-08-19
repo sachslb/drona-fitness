@@ -8,20 +8,7 @@ const trainers = [
     experience: "8+ Years Experience",
     image:
       "https://images.unsplash.com/photo-1567013127542-490d757e51fc?auto=format&fit=crop&w=1200&q=90",
-
-    // Where the image finally sits around the center
-    position: {
-      x: -31,
-      y: -20,
-      rotate: -4,
-    },
-
-    // Where the image enters from
-    enter: {
-      x: -70,
-      y: -55,
-      rotate: -16,
-    },
+    position: { x: -28, y: -24, rotate: -5 },
   },
 
   {
@@ -31,18 +18,7 @@ const trainers = [
     experience: "6+ Years Experience",
     image:
       "https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=1200&q=90",
-
-    position: {
-      x: 29,
-      y: 18,
-      rotate: 5,
-    },
-
-    enter: {
-      x: 75,
-      y: 55,
-      rotate: 18,
-    },
+    position: { x: 28, y: -18, rotate: 5 },
   },
 
   {
@@ -52,24 +28,39 @@ const trainers = [
     experience: "7+ Years Experience",
     image:
       "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=1200&q=90",
+    position: { x: 31, y: 24, rotate: -4 },
+  },
 
-    position: {
-      x: -6,
-      y: 35,
-      rotate: -3,
-    },
+  {
+    id: "04",
+    name: "Michael Stone",
+    role: "Performance Coach",
+    experience: "10+ Years Experience",
+    image:
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=90",
+    position: { x: -29, y: 25, rotate: 5 },
+  },
 
-    enter: {
-      x: -65,
-      y: 65,
-      rotate: -14,
-    },
+  {
+    id: "05",
+    name: "Emma Carter",
+    role: "Mobility & Fitness Coach",
+    experience: "5+ Years Experience",
+    image:
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=90",
+    position: { x: -5, y: -34, rotate: -3 },
+  },
+
+  {
+    id: "06",
+    name: "Ryan Brooks",
+    role: "Elite Training Coach",
+    experience: "9+ Years Experience",
+    image:
+      "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1200&q=90",
+    position: { x: 5, y: 35, rotate: 4 },
   },
 ];
-
-/* ============================================================
-   Utility
-============================================================ */
 
 function clamp(value, min = 0, max = 1) {
   return Math.min(Math.max(value, min), max);
@@ -79,22 +70,9 @@ function easeOutCubic(value) {
   return 1 - Math.pow(1 - value, 3);
 }
 
-function easeInOut(value) {
-  return value < 0.5
-    ? 4 * value * value * value
-    : 1 - Math.pow(-2 * value + 2, 3) / 2;
-}
-
 function Trainers() {
   const sectionRef = useRef(null);
-
   const [progress, setProgress] = useState(0);
-
-  /*
-   * ------------------------------------------------------------
-   * SCROLL PROGRESS
-   * ------------------------------------------------------------
-   */
 
   useEffect(() => {
     let ticking = false;
@@ -112,19 +90,20 @@ function Trainers() {
 
         const rect = sectionRef.current.getBoundingClientRect();
 
-        const scrollableDistance =
-          sectionRef.current.offsetHeight - window.innerHeight;
+        const scrollDistance =
+          sectionRef.current.offsetHeight -
+          window.innerHeight;
 
-        if (scrollableDistance <= 0) {
+        if (scrollDistance <= 0) {
           ticking = false;
           return;
         }
 
-        const current = clamp(
-          -rect.top / scrollableDistance
+        const value = clamp(
+          -rect.top / scrollDistance
         );
 
-        setProgress(current);
+        setProgress(value);
 
         ticking = false;
       });
@@ -137,38 +116,24 @@ function Trainers() {
     handleScroll();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
     };
   }, []);
 
-  /*
-   * ------------------------------------------------------------
-   * TRAINER STAGE
-   *
-   * 0 ----------------------------- 1
-   *
-   * Each trainer gets its own portion of the scroll.
-   * ------------------------------------------------------------
-   */
-
   const total = trainers.length;
 
-  const stageSize = 1 / total;
-
   /*
-   * Current trainer index
+   * Each trainer gets one scroll stage.
    */
+  const stageSize = 1 / total;
 
   const activeIndex = Math.min(
     Math.floor(progress / stageSize),
     total - 1
   );
-
-  /*
-   * ============================================================
-   * IMAGE RENDERING
-   * ============================================================
-   */
 
   return (
     <section
@@ -176,22 +141,22 @@ function Trainers() {
       id="trainers"
       className="relative bg-zinc-950"
       style={{
-        height: `${total * 120 + 100}vh`,
+        height: `${total * 110 + 100}vh`,
       }}
     >
-      {/* ======================================================
-          STICKY VIEWPORT
-      ======================================================= */}
+
+      {/* =====================================================
+          STICKY SCREEN
+      ====================================================== */}
 
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* ====================================================
+
+        {/* =====================================================
             BACKGROUND
-        ===================================================== */}
+        ====================================================== */}
 
         <div className="absolute inset-0 bg-zinc-950" />
-
-        {/* Very subtle orange glow */}
 
         <div
           className="
@@ -199,22 +164,30 @@ function Trainers() {
             absolute
             left-1/2
             top-1/2
-            h-[420px]
-            w-[420px]
+            h-[450px]
+            w-[450px]
             -translate-x-1/2
             -translate-y-1/2
             rounded-full
             bg-orange-500/[0.035]
-            blur-[130px]
+            blur-[140px]
           "
         />
 
 
-        {/* ====================================================
-            TOP HEADER
-        ===================================================== */}
+        {/* =====================================================
+            HEADER
+        ====================================================== */}
 
-        <div className="absolute left-0 right-0 top-0 z-[80]">
+        <div
+          className="
+            absolute
+            left-0
+            right-0
+            top-0
+            z-[100]
+          "
+        >
 
           <div
             className="
@@ -224,15 +197,13 @@ function Trainers() {
               items-start
               justify-between
               px-5
-              pt-7
+              pt-8
               sm:px-8
-              sm:pt-9
+              sm:pt-10
               lg:px-12
-              lg:pt-11
+              lg:pt-12
             "
           >
-
-            {/* LEFT */}
 
             <div>
 
@@ -278,7 +249,7 @@ function Trainers() {
             </div>
 
 
-            {/* RIGHT COUNTER */}
+            {/* Counter */}
 
             <div className="hidden text-right sm:block">
 
@@ -291,7 +262,7 @@ function Trainers() {
                   text-zinc-600
                 "
               >
-                Trainers
+                Trainer
               </p>
 
               <p className="mt-1 text-2xl font-black text-white">
@@ -312,15 +283,16 @@ function Trainers() {
         </div>
 
 
-        {/* ====================================================
-            CENTRAL AREA
-        ===================================================== */}
+        {/* =====================================================
+            FLOATING TRAINERS AREA
+        ====================================================== */}
 
         <div className="absolute inset-0">
 
-          {/* ==================================================
-              CENTER DECORATIVE RING
-          =================================================== */}
+
+          {/* ===================================================
+              DECORATIVE CENTER RINGS
+          ==================================================== */}
 
           <div
             className="
@@ -328,17 +300,17 @@ function Trainers() {
               absolute
               left-1/2
               top-1/2
-              h-[230px]
-              w-[230px]
+              h-[260px]
+              w-[260px]
               -translate-x-1/2
               -translate-y-1/2
               rounded-full
               border
               border-white/[0.035]
-              sm:h-[300px]
-              sm:w-[300px]
-              lg:h-[360px]
-              lg:w-[360px]
+              sm:h-[340px]
+              sm:w-[340px]
+              lg:h-[420px]
+              lg:w-[420px]
             "
           />
 
@@ -348,216 +320,185 @@ function Trainers() {
               absolute
               left-1/2
               top-1/2
-              h-[170px]
-              w-[170px]
+              h-[190px]
+              w-[190px]
               -translate-x-1/2
               -translate-y-1/2
               rounded-full
               border
               border-white/[0.025]
-              sm:h-[220px]
-              sm:w-[220px]
+              sm:h-[250px]
+              sm:w-[250px]
             "
           />
 
 
-          {/* ==================================================
+          {/* ===================================================
               TRAINER IMAGES
-          =================================================== */}
+          ==================================================== */}
 
           {trainers.map((trainer, index) => {
 
-            /*
-             * -----------------------------------------------
-             * Stage calculation
-             * -----------------------------------------------
-             */
-
-            const stageStart = index * stageSize;
-
-            const stageEnd = stageStart + stageSize;
+            const stageStart =
+              index * stageSize;
 
             const stageProgress = clamp(
               (progress - stageStart) /
-                (stageEnd - stageStart)
+                stageSize
             );
 
 
             /*
              * -----------------------------------------------
-             * Entry animation
-             *
-             * 0 → 45%
+             * IMAGE STARTS INSIDE THE CENTER CIRCLE
              * -----------------------------------------------
              */
 
-            const enterProgress = clamp(
-              stageProgress / 0.45
+            const entryProgress = clamp(
+              stageProgress / 0.72
             );
 
-            const enterEase = easeOutCubic(
-              enterProgress
-            );
+            const eased =
+              easeOutCubic(entryProgress);
 
 
             /*
-             * -----------------------------------------------
-             * Small settling movement
-             * -----------------------------------------------
+             * Start exactly at center.
              */
 
-            const settleProgress = clamp(
-              (stageProgress - 0.45) / 0.55
-            );
-
-            const settleEase = easeInOut(
-              settleProgress
-            );
+            const startX = 0;
+            const startY = 0;
+            const startRotate = 0;
 
 
             /*
-             * -----------------------------------------------
-             * Position
-             * -----------------------------------------------
+             * Final position outside circle.
              */
-
-            const startX = trainer.enter.x;
-
-            const startY = trainer.enter.y;
-
-            const startRotate = trainer.enter.rotate;
 
             const finalX = trainer.position.x;
-
             const finalY = trainer.position.y;
-
-            const finalRotate = trainer.position.rotate;
+            const finalRotate =
+              trainer.position.rotate;
 
 
             /*
-             * Interpolate entry → final position
+             * Move from CENTER → OUTSIDE.
              */
 
-            let x =
+            const x =
               startX +
-              (finalX - startX) * enterEase;
+              (finalX - startX) * eased;
 
-            let y =
+            const y =
               startY +
-              (finalY - startY) * enterEase;
+              (finalY - startY) * eased;
 
-            let rotate =
+            const rotate =
               startRotate +
               (finalRotate - startRotate) *
-                enterEase;
-
-
-            /*
-             * Add tiny floating movement after entry.
-             */
-
-            if (stageProgress > 0.45) {
-
-              const floatingAmount =
-                Math.sin(
-                  settleProgress * Math.PI
-                ) * 3;
-
-              x += floatingAmount;
-
-              y -= floatingAmount * 0.7;
-
-            }
+                eased;
 
 
             /*
              * -----------------------------------------------
-             * Scale
+             * SCALE
+             *
+             * Image starts tiny inside circle.
+             * Then grows as it leaves.
              * -----------------------------------------------
              */
 
             const scale =
-              0.15 +
-              enterEase * 0.85;
+              0.08 +
+              eased * 0.92;
 
 
             /*
              * -----------------------------------------------
-             * Opacity
+             * OPACITY
              * -----------------------------------------------
              */
 
-            let opacity = enterEase;
+            let opacity = eased;
 
             /*
-             * Once the image has appeared, keep it visible.
+             * Keep previous trainers visible.
              */
 
-            if (stageProgress >= 0.45) {
+            if (index < activeIndex) {
               opacity = 1;
             }
 
 
             /*
+             * Future trainers invisible.
+             */
+
+            if (index > activeIndex) {
+              opacity = 0;
+            }
+
+
+            /*
+             * Current image.
+             */
+
+            if (index === activeIndex) {
+              opacity = Math.max(
+                opacity,
+                0.05
+              );
+            }
+
+
+            /*
              * -----------------------------------------------
-             * Blur
+             * BLUR
+             *
+             * Strong blur when inside circle.
+             * Sharp when outside.
              * -----------------------------------------------
              */
 
             const blur =
               Math.max(
                 0,
-                8 - enterEase * 8
+                7 - eased * 7
               );
 
 
             /*
              * -----------------------------------------------
-             * Slight image zoom
+             * Image size
              * -----------------------------------------------
              */
 
-            const imageScale =
-              1.08 -
-              enterEase * 0.08;
+            const width =
+              "clamp(210px, 23vw, 360px)";
 
 
             /*
              * -----------------------------------------------
-             * Width
+             * MOBILE POSITION
              * -----------------------------------------------
              */
 
-            const imageWidth =
-              index === 0
-                ? "clamp(230px, 25vw, 390px)"
-                : index === 1
-                ? "clamp(220px, 24vw, 370px)"
-                : "clamp(225px, 25vw, 380px)";
+            const mobileX =
+              finalX * 0.72;
+
+            const mobileY =
+              finalY * 0.72;
 
 
-            /*
-             * -----------------------------------------------
-             * Z-index
-             * -----------------------------------------------
-             */
+            const actualX =
+              window.innerWidth < 640
+                ? mobileX
+                : x;
 
-            const zIndex =
-              20 + index;
-
-
-            /*
-             * -----------------------------------------------
-             * Don't show future images until their stage.
-             * -----------------------------------------------
-             */
-
-            if (
-              progress < stageStart &&
-              index !== 0
-            ) {
-              opacity = 0;
-            }
+            const actualY =
+              window.innerWidth < 640
+                ? mobileY
+                : y;
 
 
             return (
@@ -576,37 +517,38 @@ function Trainers() {
                   sm:rounded-3xl
                 "
                 style={{
-                  width: imageWidth,
+                  width,
 
-                  aspectRatio: "1.45 / 1",
+                  aspectRatio:
+                    "1.45 / 1",
 
-                  zIndex,
+                  zIndex:
+                    20 + index,
 
                   opacity,
 
                   transform: `
                     translate3d(
-                      calc(-50% + ${x}vw),
-                      calc(-50% + ${y}vh),
+                      calc(-50% + ${actualX}vw),
+                      calc(-50% + ${actualY}vh),
                       0
                     )
                     rotate(${rotate}deg)
                     scale(${scale})
                   `,
 
-                  filter: `blur(${blur}px)`,
+                  filter:
+                    `blur(${blur}px)`,
 
                   willChange:
                     "transform, opacity, filter",
 
-                  transition:
+                  pointerEvents:
                     "none",
                 }}
               >
 
-                {/* ==========================================
-                    IMAGE
-                =========================================== */}
+                {/* IMAGE */}
 
                 <img
                   src={trainer.image}
@@ -619,15 +561,10 @@ function Trainers() {
                     w-full
                     object-cover
                   "
-                  style={{
-                    transform: `scale(${imageScale})`,
-                  }}
                 />
 
 
-                {/* ==========================================
-                    IMAGE DARK GRADIENT
-                =========================================== */}
+                {/* DARK OVERLAY */}
 
                 <div
                   className="
@@ -641,9 +578,7 @@ function Trainers() {
                 />
 
 
-                {/* ==========================================
-                    TOP NUMBER
-                =========================================== */}
+                {/* NUMBER */}
 
                 <div
                   className="
@@ -670,9 +605,7 @@ function Trainers() {
                 </div>
 
 
-                {/* ==========================================
-                    TRAINER DETAILS
-                =========================================== */}
+                {/* INFORMATION */}
 
                 <div
                   className="
@@ -716,7 +649,6 @@ function Trainers() {
                   <p
                     className="
                       mt-1
-                      max-w-[230px]
                       text-[8px]
                       leading-4
                       text-zinc-300
@@ -729,9 +661,7 @@ function Trainers() {
                 </div>
 
 
-                {/* ==========================================
-                    INNER BORDER
-                =========================================== */}
+                {/* BORDER */}
 
                 <div
                   className="
@@ -740,7 +670,7 @@ function Trainers() {
                     inset-0
                     rounded-2xl
                     border
-                    border-white/[0.06]
+                    border-white/[0.07]
                     sm:rounded-3xl
                   "
                 />
@@ -750,16 +680,16 @@ function Trainers() {
           })}
 
 
-          {/* ==================================================
-              CENTER TRAINERS CIRCLE
-          =================================================== */}
+          {/* ===================================================
+              CENTER CIRCLE
+          ==================================================== */}
 
           <div
             className="
               absolute
               left-1/2
               top-1/2
-              z-[70]
+              z-[90]
               -translate-x-1/2
               -translate-y-1/2
             "
@@ -775,26 +705,15 @@ function Trainers() {
                 justify-center
                 rounded-full
                 border
-                border-white/20
-                bg-black/90
-                shadow-[0_0_40px_rgba(0,0,0,0.7)]
+                border-white/25
+                bg-black
+                shadow-[0_0_35px_rgba(0,0,0,0.8)]
                 sm:h-[100px]
                 sm:w-[100px]
               "
-              style={{
-                transform: `
-                  scale(
-                    ${
-                      0.96 +
-                      Math.sin(progress * Math.PI) *
-                        0.05
-                    }
-                  )
-                `,
-              }}
             >
 
-              {/* Outer glow */}
+              {/* Outer ring */}
 
               <div
                 className="
@@ -808,26 +727,22 @@ function Trainers() {
               />
 
 
-              {/* Small top line */}
+              {/* Inner glow */}
 
               <div
                 className="
+                  pointer-events-none
                   absolute
-                  left-1/2
-                  top-[-13px]
-                  h-[25px]
-                  w-px
-                  -translate-x-1/2
-                  bg-gradient-to-b
-                  from-transparent
-                  to-white/20
+                  inset-2
+                  rounded-full
+                  bg-white/[0.025]
                 "
               />
 
 
               {/* Text */}
 
-              <div className="text-center">
+              <div className="relative text-center">
 
                 <p
                   className="
@@ -845,11 +760,12 @@ function Trainers() {
                 <p
                   className="
                     mt-1
-                    text-[6px]
+                    text-[5px]
                     font-bold
                     uppercase
-                    tracking-[0.22em]
+                    tracking-[0.2em]
                     text-zinc-500
+                    sm:text-[6px]
                   "
                 >
                   Meet the team
@@ -864,9 +780,9 @@ function Trainers() {
         </div>
 
 
-        {/* ====================================================
-            BOTTOM INFORMATION
-        ===================================================== */}
+        {/* =====================================================
+            BOTTOM
+        ====================================================== */}
 
         <div
           className="
@@ -874,8 +790,8 @@ function Trainers() {
             bottom-6
             left-0
             right-0
-            z-[80]
-            sm:bottom-8
+            z-[100]
+            sm:bottom-9
           "
         >
 
@@ -892,27 +808,33 @@ function Trainers() {
             "
           >
 
-            {/* Description */}
-
             <p
               className="
                 hidden
-                max-w-xs
+                max-w-sm
                 text-xs
                 leading-5
                 text-zinc-600
                 sm:block
               "
             >
-              Experience, knowledge and personal attention —
-              our coaches are here to help you become
-              stronger.
+              Meet the people behind the
+              progress. Every trainer brings
+              experience, discipline and a
+              different approach to your goals.
             </p>
 
 
-            {/* Scroll indicator */}
+            {/* Scroll */}
 
-            <div className="ml-auto flex items-center gap-3">
+            <div
+              className="
+                ml-auto
+                flex
+                items-center
+                gap-3
+              "
+            >
 
               <span
                 className="
@@ -957,16 +879,16 @@ function Trainers() {
         </div>
 
 
-        {/* ====================================================
-            SIDE STAGE INDICATOR
-        ===================================================== */}
+        {/* =====================================================
+            RIGHT INDICATOR
+        ====================================================== */}
 
         <div
           className="
             absolute
             right-5
             top-1/2
-            z-[80]
+            z-[100]
             hidden
             -translate-y-1/2
             flex-col
@@ -975,90 +897,53 @@ function Trainers() {
           "
         >
 
-          {trainers.map((trainer, index) => {
+          {trainers.map(
+            (trainer, index) => {
 
-            const isActive =
-              index === activeIndex;
+              const active =
+                index === activeIndex;
 
-            return (
-              <div
-                key={trainer.id}
-                className="flex items-center gap-2"
-              >
-
-                <span
-                  className={`
-                    text-[8px]
-                    font-bold
-                    transition-colors
-                    ${
-                      isActive
-                        ? "text-orange-500"
-                        : "text-zinc-700"
-                    }
-                  `}
-                >
-                  {trainer.id}
-                </span>
-
+              return (
                 <div
-                  className={`
-                    h-px
-                    transition-all
-                    duration-300
-                    ${
-                      isActive
-                        ? "w-7 bg-orange-500"
-                        : "w-2 bg-zinc-800"
-                    }
-                  `}
-                />
+                  key={trainer.id}
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                  "
+                >
 
-              </div>
-            );
+                  <span
+                    className={`
+                      text-[8px]
+                      font-bold
+                      ${
+                        active
+                          ? "text-orange-500"
+                          : "text-zinc-700"
+                      }
+                    `}
+                  >
+                    {trainer.id}
+                  </span>
 
-          })}
+                  <span
+                    className={`
+                      h-px
+                      transition-all
+                      duration-300
+                      ${
+                        active
+                          ? "w-7 bg-orange-500"
+                          : "w-2 bg-zinc-800"
+                      }
+                    `}
+                  />
 
-        </div>
-
-
-        {/* ====================================================
-            MOBILE CURRENT TRAINER
-        ===================================================== */}
-
-        <div
-          className="
-            absolute
-            bottom-6
-            left-5
-            z-[80]
-            sm:hidden
-          "
-        >
-
-          <p
-            className="
-              text-[7px]
-              font-bold
-              uppercase
-              tracking-[0.2em]
-              text-zinc-600
-            "
-          >
-            Currently
-          </p>
-
-          <p
-            className="
-              mt-1
-              text-[10px]
-              font-bold
-              uppercase
-              text-white
-            "
-          >
-            {trainers[activeIndex].name}
-          </p>
+                </div>
+              );
+            }
+          )}
 
         </div>
 
