@@ -1,4 +1,9 @@
+import { useForm, ValidationError } from "@formspree/react";
+
 function Contact() {
+  // Formspree form ID
+  const [state, handleSubmit, reset] = useForm("myegbavz");
+
   return (
     <section
       id="contact"
@@ -39,7 +44,6 @@ function Contact() {
 
         </div>
 
-
         {/* =========================
             CONTACT GRID
         ========================== */}
@@ -59,7 +63,6 @@ function Contact() {
               <br />
               <span className="text-orange-500">Journey.</span>
             </h3>
-
 
             {/* Details */}
             <div className="mt-10 space-y-7">
@@ -85,7 +88,6 @@ function Contact() {
 
               </div>
 
-
               {/* Phone */}
               <div className="flex gap-4">
 
@@ -107,7 +109,6 @@ function Contact() {
                 </div>
 
               </div>
-
 
               {/* Email */}
               <div className="flex gap-4">
@@ -132,7 +133,6 @@ function Contact() {
               </div>
 
             </div>
-
 
             {/* Opening Hours */}
             <div className="mt-10 border-t border-white/10 pt-7">
@@ -169,7 +169,6 @@ function Contact() {
 
           </div>
 
-
           {/* =========================
               CONTACT FORM
           ========================== */}
@@ -185,149 +184,251 @@ function Contact() {
               </h3>
             </div>
 
+            {/* =========================
+                SUCCESS STATE
+            ========================== */}
+            {state.succeeded ? (
+              <div className="mt-8 rounded-2xl border border-orange-500/20 bg-orange-500/10 p-8 text-center">
 
-            <form className="mt-8 space-y-5">
-
-              {/* Name + Phone */}
-              <div className="grid gap-5 sm:grid-cols-2">
-
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
-                  >
-                    Full Name
-                  </label>
-
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your name"
-                    autoComplete="name"
-                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
-                  />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 text-2xl font-bold text-white">
+                  ✓
                 </div>
 
+                <h4 className="mt-5 text-xl font-black uppercase text-white">
+                  Enquiry Sent!
+                </h4>
 
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
-                  >
-                    Phone Number
-                  </label>
+                <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-zinc-400">
+                  Thank you for contacting IRONFORGE. Our team will
+                  get back to you as soon as possible.
+                </p>
 
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+91"
-                    autoComplete="tel"
-                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="mt-6 rounded-full border border-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-300 transition hover:border-orange-500 hover:text-orange-500"
+                >
+                  Send Another Enquiry
+                </button>
 
               </div>
+            ) : (
 
-
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
-                >
-                  Email Address
-                </label>
-
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
-                />
-              </div>
-
-
-              {/* Goal */}
-              <div>
-                <label
-                  htmlFor="goal"
-                  className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
-                >
-                  Your Goal
-                </label>
-
-                <select
-                  id="goal"
-                  name="goal"
-                  defaultValue=""
-                  className="w-full appearance-none rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition focus:border-orange-500"
-                >
-                  <option value="" disabled>
-                    Select your goal
-                  </option>
-
-                  <option value="muscle">
-                    Build Muscle
-                  </option>
-
-                  <option value="weight-loss">
-                    Weight Loss
-                  </option>
-
-                  <option value="strength">
-                    Build Strength
-                  </option>
-
-                  <option value="fitness">
-                    Improve Fitness
-                  </option>
-
-                  <option value="personal-training">
-                    Personal Training
-                  </option>
-                </select>
-              </div>
-
-
-              {/* Message */}
-              <div>
-                <label
-                  htmlFor="message"
-                  className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
-                >
-                  Message
-                </label>
-
-                <textarea
-                  id="message"
-                  name="message"
-                  rows="4"
-                  placeholder="Tell us what you're looking for..."
-                  className="w-full resize-none rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
-                />
-              </div>
-
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="flex min-h-12 w-full items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+              <form
+                onSubmit={handleSubmit}
+                className="mt-8 space-y-5"
               >
-                Send Enquiry
-                <span className="ml-2 text-lg" aria-hidden="true">
-                  →
-                </span>
-              </button>
 
-              <p className="text-center text-[11px] leading-5 text-zinc-600">
-                We'll get back to you as soon as possible.
-              </p>
+                {/* Name + Phone */}
+                <div className="grid gap-5 sm:grid-cols-2">
 
-            </form>
+                  {/* Full Name */}
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    >
+                      Full Name
+                    </label>
+
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Your name"
+                      autoComplete="name"
+                      minLength={2}
+                      maxLength={80}
+                      required
+                      className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
+                    />
+
+                    <ValidationError
+                      prefix="Name"
+                      field="name"
+                      errors={state.errors}
+                      className="mt-1 text-xs text-red-400"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    >
+                      Phone Number
+                    </label>
+
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      autoComplete="tel"
+                      inputMode="tel"
+                      pattern="[+]?[0-9 ()-]{10,20}"
+                      maxLength={20}
+                      required
+                      className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
+                    />
+
+                    <ValidationError
+                      prefix="Phone"
+                      field="phone"
+                      errors={state.errors}
+                      className="mt-1 text-xs text-red-400"
+                    />
+                  </div>
+
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
+                  >
+                    Email Address
+                  </label>
+
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    maxLength={120}
+                    required
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
+                  />
+
+                  <ValidationError
+                    prefix="Email"
+                    field="email"
+                    errors={state.errors}
+                    className="mt-1 text-xs text-red-400"
+                  />
+                </div>
+
+                {/* Goal */}
+                <div>
+                  <label
+                    htmlFor="goal"
+                    className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
+                  >
+                    Your Goal
+                  </label>
+
+                  <select
+                    id="goal"
+                    name="goal"
+                    defaultValue=""
+                    required
+                    className="w-full appearance-none rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition focus:border-orange-500"
+                  >
+                    <option value="" disabled>
+                      Select your goal
+                    </option>
+
+                    <option value="Build Muscle">
+                      Build Muscle
+                    </option>
+
+                    <option value="Weight Loss">
+                      Weight Loss
+                    </option>
+
+                    <option value="Build Strength">
+                      Build Strength
+                    </option>
+
+                    <option value="Improve Fitness">
+                      Improve Fitness
+                    </option>
+
+                    <option value="Personal Training">
+                      Personal Training
+                    </option>
+                  </select>
+
+                  <ValidationError
+                    prefix="Goal"
+                    field="goal"
+                    errors={state.errors}
+                    className="mt-1 text-xs text-red-400"
+                  />
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-400"
+                  >
+                    Message
+                  </label>
+
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows="4"
+                    placeholder="Tell us what you're looking for..."
+                    minLength={10}
+                    maxLength={1000}
+                    required
+                    className="w-full resize-none rounded-xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500"
+                  />
+
+                  <ValidationError
+                    prefix="Message"
+                    field="message"
+                    errors={state.errors}
+                    className="mt-1 text-xs text-red-400"
+                  />
+                </div>
+
+                {/* Formspree General Error */}
+                {state.errors && (
+                  <ValidationError
+                    errors={state.errors}
+                    className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-center text-xs leading-5 text-red-400"
+                  />
+                )}
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={state.submitting}
+                  className="flex min-h-12 w-full items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {state.submitting ? (
+                    <>
+                      <span
+                        className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                        aria-hidden="true"
+                      />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      Send Enquiry
+                      <span
+                        className="ml-2 text-lg"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                <p className="text-center text-[11px] leading-5 text-zinc-600">
+                  Your information is used only to respond to your enquiry.
+                </p>
+
+              </form>
+            )}
 
           </div>
 
