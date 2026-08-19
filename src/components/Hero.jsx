@@ -79,7 +79,7 @@ function Hero() {
 
               <br />
 
-              Self.
+              Self
             </h1>
 
 
