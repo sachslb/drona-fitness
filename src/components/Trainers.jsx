@@ -65,13 +65,32 @@ function easeOutCubic(value) {
   return 1 - Math.pow(1 - value, 3);
 }
 
+function easeInOutCubic(value) {
+  return value < 0.5
+    ? 4 * value * value * value
+    : 1 - Math.pow(-2 * value + 2, 3) / 2;
+}
+
 function Trainers() {
   const sectionRef = useRef(null);
   const [progress, setProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateDevice = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    updateDevice();
+    window.addEventListener("resize", updateDevice);
+
+    return () => {
+      window.removeEventListener("resize", updateDevice);
+    };
+  }, []);
 
   useEffect(() => {
     let ticking = false;
-    let lastProgress = -1;
 
     const handleScroll = () => {
       if (ticking) return;
@@ -100,13 +119,7 @@ function Trainers() {
           -rect.top / scrollDistance
         );
 
-        /*
-         * Avoid unnecessary React renders.
-         */
-        if (Math.abs(nextProgress - lastProgress) > 0.002) {
-          lastProgress = nextProgress;
-          setProgress(nextProgress);
-        }
+        setProgress(nextProgress);
 
         ticking = false;
       });
@@ -129,17 +142,17 @@ function Trainers() {
   const total = trainers.length;
 
   /*
-   * IMPORTANT:
+   * Shorter section = faster transitions.
    *
-   * Previous:
-   * total * 110 + 100
+   * Mobile:
+   * 6 trainers × 62vh + 70vh
    *
-   * New:
-   * total * 70 + 80
-   *
-   * This makes the trainer transitions much faster.
+   * Desktop:
+   * 6 trainers × 68vh + 80vh
    */
-  const sectionHeight = total * 70 + 80;
+  const sectionHeight = isMobile
+    ? total * 62 + 70
+    : total * 68 + 80;
 
   const stageSize = 1 / total;
 
@@ -157,10 +170,6 @@ function Trainers() {
         height: `${sectionHeight}vh`,
       }}
     >
-      {/* =====================================================
-          STICKY SCREEN
-      ====================================================== */}
-
       <div className="sticky top-0 h-screen overflow-hidden">
 
         {/* =====================================================
@@ -175,13 +184,16 @@ function Trainers() {
             absolute
             left-1/2
             top-1/2
-            h-[380px]
-            w-[380px]
+            h-[280px]
+            w-[280px]
             -translate-x-1/2
             -translate-y-1/2
             rounded-full
-            bg-orange-500/[0.035]
-            blur-[100px]
+            bg-orange-500/[0.045]
+            blur-[90px]
+            sm:h-[420px]
+            sm:w-[420px]
+            sm:blur-[120px]
           "
         />
 
@@ -189,15 +201,7 @@ function Trainers() {
             HEADER
         ====================================================== */}
 
-        <div
-          className="
-            absolute
-            left-0
-            right-0
-            top-0
-            z-[100]
-          "
-        >
+        <div className="absolute left-0 right-0 top-0 z-[100]">
           <div
             className="
               mx-auto
@@ -219,7 +223,7 @@ function Trainers() {
 
                 <p
                   className="
-                    text-[10px]
+                    text-[9px]
                     font-bold
                     uppercase
                     tracking-[0.25em]
@@ -245,7 +249,6 @@ function Trainers() {
               >
                 Meet The
                 <br />
-
                 <span className="text-orange-500">
                   Experts.
                 </span>
@@ -280,14 +283,12 @@ function Trainers() {
         </div>
 
         {/* =====================================================
-            FLOATING TRAINERS
+            MAIN TRAINER AREA
         ====================================================== */}
 
         <div className="absolute inset-0">
 
-          {/* ===================================================
-              CENTER RINGS
-          ==================================================== */}
+          {/* OUTER RING */}
 
           <div
             className="
@@ -301,7 +302,7 @@ function Trainers() {
               -translate-y-1/2
               rounded-full
               border
-              border-white/[0.04]
+              border-white/[0.035]
               sm:h-[340px]
               sm:w-[340px]
               lg:h-[420px]
@@ -309,26 +310,28 @@ function Trainers() {
             "
           />
 
+          {/* INNER RING */}
+
           <div
             className="
               pointer-events-none
               absolute
               left-1/2
               top-1/2
-              h-[165px]
-              w-[165px]
+              h-[160px]
+              w-[160px]
               -translate-x-1/2
               -translate-y-1/2
               rounded-full
               border
-              border-white/[0.03]
-              sm:h-[250px]
-              sm:w-[250px]
+              border-white/[0.04]
+              sm:h-[245px]
+              sm:w-[245px]
             "
           />
 
           {/* ===================================================
-              TRAINER IMAGES
+              TRAINERS
           ==================================================== */}
 
           {trainers.map((trainer, index) => {
@@ -339,36 +342,131 @@ function Trainers() {
             );
 
             /*
-             * Faster entry.
+             * ENTRY
              *
-             * Image enters during first 58%
-             * instead of 72%.
+             * First 50%:
+             * center → outside
              */
+
             const entryProgress = clamp(
-              stageProgress / 0.58
+              stageProgress / 0.5
             );
 
-            const eased = easeOutCubic(entryProgress);
+            const entryEase =
+              easeOutCubic(entryProgress);
 
             /*
-             * CENTER → OUTSIDE
+             * HOLD
+             *
+             * 50% → 72%
+             *
+             * Image stays outside.
+             * Small floating movement.
              */
 
-            const x =
-              trainer.position.x * eased;
-
-            const y =
-              trainer.position.y * eased;
-
-            const rotate =
-              trainer.position.rotate * eased;
+            const holdProgress = clamp(
+              (stageProgress - 0.5) / 0.22
+            );
 
             /*
-             * Image grows from the center.
+             * EXIT
+             *
+             * 72% → 100%
+             *
+             * Image zooms OUT and moves away.
              */
+
+            const exitProgress = clamp(
+              (stageProgress - 0.72) / 0.28
+            );
+
+            const exitEase =
+              easeInOutCubic(exitProgress);
+
+            /*
+             * Position
+             */
+
+            let x =
+              trainer.position.x * entryEase;
+
+            let y =
+              trainer.position.y * entryEase;
+
+            let rotate =
+              trainer.position.rotate * entryEase;
+
+            /*
+             * Small floating movement while visible.
+             */
+
+            if (
+              stageProgress > 0.5 &&
+              stageProgress < 0.72
+            ) {
+              x +=
+                Math.sin(
+                  holdProgress * Math.PI
+                ) * 1.5;
+
+              y +=
+                Math.cos(
+                  holdProgress * Math.PI
+                ) * 1.2;
+            }
+
+            /*
+             * EXIT MOVEMENT
+             *
+             * Continue in the same direction,
+             * then move farther away.
+             */
+
+            if (stageProgress > 0.72) {
+              const exitDistance = 18;
+
+              x +=
+                trainer.position.x > 0
+                  ? exitDistance * exitEase
+                  : -exitDistance * exitEase;
+
+              y +=
+                trainer.position.y > 0
+                  ? exitDistance * exitEase
+                  : -exitDistance * exitEase;
+
+              rotate +=
+                trainer.position.rotate > 0
+                  ? 8 * exitEase
+                  : -8 * exitEase;
+            }
+
+            /*
+             * ENTRY SCALE
+             *
+             * Tiny center image → normal card.
+             */
+
+            const entryScale =
+              0.08 +
+              entryEase * 0.92;
+
+            /*
+             * EXIT SCALE
+             *
+             * This creates the zoom-out effect.
+             *
+             * 1 → 0.72
+             */
+
+            const exitScale =
+              1 -
+              exitEase * 0.28;
 
             const scale =
-              0.10 + eased * 0.90;
+              stageProgress < 0.72
+                ? entryScale
+                : exitScale;
 
             /*
              * OPACITY
@@ -377,65 +475,83 @@ function Trainers() {
             let opacity = 0;
 
             if (index < activeIndex) {
-              opacity = 1;
+              opacity = 0;
             }
 
             if (index === activeIndex) {
-              opacity = Math.max(eased, 0.05);
+              opacity = 1;
             }
 
             /*
-             * Previous trainer smoothly fades
-             * when next trainer starts.
+             * Fade out during exit.
              */
 
-            if (
-              index === activeIndex - 1 &&
-              stageProgress < 0.25
-            ) {
+            if (index === activeIndex) {
               opacity =
                 1 -
-                clamp(stageProgress / 0.25);
+                exitEase * 0.8;
             }
 
             /*
-             * IMPORTANT PERFORMANCE CHANGE:
+             * Previous trainer.
              *
-             * We removed the heavy animated blur.
+             * It stays slightly visible while
+             * the next trainer enters.
+             */
+
+            if (index < activeIndex) {
+              const previousDistance =
+                activeIndex - index;
+
+              if (previousDistance === 1) {
+                opacity =
+                  0.35 *
+                  (1 - stageProgress);
+              } else {
+                opacity = 0;
+              }
+            }
+
+            /*
+             * Future trainers remain hidden.
+             */
+
+            if (index > activeIndex) {
+              opacity = 0;
+            }
+
+            /*
+             * Blur only during tiny center state.
              *
-             * Mobile browsers can struggle when
-             * multiple large images have blur filters.
+             * No expensive continuous blur.
              */
 
             const blur =
-              eased < 0.35
-                ? 2
+              entryProgress < 0.3
+                ? 1.5
                 : 0;
 
             /*
-             * Image size.
+             * RESPONSIVE CARD SIZE
              */
 
-            const width =
-              "clamp(210px, 23vw, 360px)";
+            const width = isMobile
+              ? "clamp(190px, 62vw, 280px)"
+              : "clamp(240px, 23vw, 360px)";
 
             /*
-             * Mobile uses smaller movement.
+             * Mobile movement.
              */
 
-            const isMobile =
-              typeof window !== "undefined" &&
-              window.innerWidth < 640;
+            const mobileMultiplier = 0.58;
 
-            const actualX =
-              isMobile
-                ? trainer.position.x * 0.68 * eased
-                : x;
+            const actualX = isMobile
+              ? x * mobileMultiplier
+              : x;
 
-            const actualY =
-              isMobile
-                ? trainer.position.y * 0.68 * eased
-                : y;
+            const actualY = isMobile
+              ? y * mobileMultiplier
+              : y;
 
             return (
               <div
@@ -445,11 +561,11 @@ function Trainers() {
                   left-1/2
                   top-1/2
                   overflow-hidden
-                  rounded-2xl
+                  rounded-[18px]
                   border
                   border-white/10
                   bg-zinc-900
-                  shadow-2xl
+                  shadow-[0_25px_80px_rgba(0,0,0,0.55)]
                   sm:rounded-3xl
                 "
                 style={{
@@ -459,7 +575,7 @@ function Trainers() {
                     "1.45 / 1",
 
                   zIndex:
-                    20 + index,
+                    30 + index,
 
                   opacity,
 
@@ -472,10 +588,6 @@ function Trainers() {
                     rotate(${rotate}deg)
                     scale(${scale})
                   `,
-
-                  /*
-                   * Only tiny blur.
-                   */
 
                   filter:
                     blur > 0
@@ -495,7 +607,6 @@ function Trainers() {
                     "none",
                 }}
               >
-
                 {/* IMAGE */}
 
                 <img
@@ -513,12 +624,12 @@ function Trainers() {
                     inset-0
                     h-full
                     w-full
-                    object-cover
                     select-none
+                    object-cover
                   "
                 />
 
-                {/* DARK GRADIENT */}
+                {/* IMAGE GRADIENT */}
 
                 <div
                   className="
@@ -526,7 +637,21 @@ function Trainers() {
                     inset-0
                     bg-gradient-to-t
                     from-black/90
-                    via-black/20
+                    via-black/10
+                    to-transparent
+                  "
+                />
+
+                {/* TOP LIGHT */}
+
+                <div
+                  className="
+                    pointer-events-none
+                    absolute
+                    inset-0
+                    bg-gradient-to-br
+                    from-white/[0.08]
+                    via-transparent
                     to-transparent
                   "
                 />
@@ -544,7 +669,7 @@ function Trainers() {
                 >
                   <span
                     className="
-                      text-[9px]
+                      text-[8px]
                       font-black
                       tracking-[0.2em]
                       text-white/70
@@ -563,14 +688,14 @@ function Trainers() {
                     bottom-0
                     left-0
                     right-0
-                    p-4
+                    p-3
                     sm:p-5
                   "
                 >
                   <p
                     className="
                       mb-1
-                      text-[7px]
+                      text-[6px]
                       font-bold
                       uppercase
                       tracking-[0.18em]
@@ -583,7 +708,7 @@ function Trainers() {
 
                   <h3
                     className="
-                      text-sm
+                      text-[13px]
                       font-black
                       uppercase
                       leading-none
@@ -598,10 +723,11 @@ function Trainers() {
                   <p
                     className="
                       mt-1
-                      text-[8px]
-                      leading-4
+                      text-[7px]
+                      leading-3
                       text-zinc-300
                       sm:text-[10px]
+                      sm:leading-4
                     "
                   >
                     {trainer.role}
@@ -615,7 +741,7 @@ function Trainers() {
                     pointer-events-none
                     absolute
                     inset-0
-                    rounded-2xl
+                    rounded-[18px]
                     border
                     border-white/[0.07]
                     sm:rounded-3xl
@@ -643,8 +769,8 @@ function Trainers() {
               className="
                 relative
                 flex
-                h-[82px]
-                w-[82px]
+                h-[76px]
+                w-[76px]
                 items-center
                 justify-center
                 rounded-full
@@ -656,7 +782,6 @@ function Trainers() {
                 sm:w-[100px]
               "
             >
-
               {/* Outer ring */}
 
               <div
@@ -670,16 +795,16 @@ function Trainers() {
                 "
               />
 
-              {/* Inner ring */}
+              {/* Orange ring */}
 
               <div
                 className="
                   pointer-events-none
                   absolute
-                  inset-2
+                  -inset-2
                   rounded-full
                   border
-                  border-orange-500/10
+                  border-orange-500/[0.08]
                 "
               />
 
@@ -701,7 +826,7 @@ function Trainers() {
                 <p
                   className="
                     font-serif
-                    text-[13px]
+                    text-[12px]
                     italic
                     leading-none
                     text-white
@@ -714,7 +839,7 @@ function Trainers() {
                 <p
                   className="
                     mt-1
-                    text-[5px]
+                    text-[4px]
                     font-bold
                     uppercase
                     tracking-[0.2em]
@@ -736,7 +861,7 @@ function Trainers() {
         <div
           className="
             absolute
-            bottom-6
+            bottom-5
             left-0
             right-0
             z-[100]
@@ -771,8 +896,6 @@ function Trainers() {
               different approach to your goals.
             </p>
 
-            {/* Scroll indicator */}
-
             <div
               className="
                 ml-auto
@@ -783,11 +906,12 @@ function Trainers() {
             >
               <span
                 className="
-                  text-[8px]
+                  text-[7px]
                   font-bold
                   uppercase
                   tracking-[0.25em]
                   text-zinc-600
+                  sm:text-[8px]
                 "
               >
                 Scroll
@@ -796,7 +920,7 @@ function Trainers() {
               <div
                 className="
                   h-px
-                  w-16
+                  w-14
                   overflow-hidden
                   bg-white/10
                   sm:w-24
@@ -825,7 +949,7 @@ function Trainers() {
         <div
           className="
             absolute
-            right-5
+            right-4
             top-1/2
             z-[100]
             hidden
@@ -842,11 +966,7 @@ function Trainers() {
             return (
               <div
                 key={trainer.id}
-                className="
-                  flex
-                  items-center
-                  gap-2
-                "
+                className="flex items-center gap-2"
               >
                 <span
                   className={`
