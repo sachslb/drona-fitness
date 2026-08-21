@@ -65,6 +65,10 @@ function easeOutCubic(value) {
   return 1 - Math.pow(1 - value, 3);
 }
 
+function easeInCubic(value) {
+  return value * value * value;
+}
+
 function easeInOutCubic(value) {
   return value < 0.5
     ? 4 * value * value * value
@@ -73,8 +77,13 @@ function easeInOutCubic(value) {
 
 function Trainers() {
   const sectionRef = useRef(null);
+
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  /* ============================================================
+     DEVICE DETECTION
+  ============================================================ */
 
   useEffect(() => {
     const updateDevice = () => {
@@ -82,12 +91,17 @@ function Trainers() {
     };
 
     updateDevice();
+
     window.addEventListener("resize", updateDevice);
 
     return () => {
       window.removeEventListener("resize", updateDevice);
     };
   }, []);
+
+  /* ============================================================
+     SCROLL ENGINE
+  ============================================================ */
 
   useEffect(() => {
     let ticking = false;
@@ -141,15 +155,18 @@ function Trainers() {
 
   const total = trainers.length;
 
-  /*
-   * Shorter section = faster transitions.
-   *
-   * Mobile:
-   * 6 trainers × 62vh + 70vh
-   *
-   * Desktop:
-   * 6 trainers × 68vh + 80vh
-   */
+  /* ============================================================
+     SECTION HEIGHT
+
+     Shorter = faster transitions.
+
+     Mobile:
+     62vh per trainer
+
+     Desktop:
+     68vh per trainer
+  ============================================================ */
+
   const sectionHeight = isMobile
     ? total * 62 + 70
     : total * 68 + 80;
@@ -170,9 +187,13 @@ function Trainers() {
         height: `${sectionHeight}vh`,
       }}
     >
+      {/* ========================================================
+          STICKY SCREEN
+      ======================================================== */}
+
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* =====================================================
+        {/* ======================================================
             BACKGROUND
         ====================================================== */}
 
@@ -197,7 +218,7 @@ function Trainers() {
           "
         />
 
-        {/* =====================================================
+        {/* ======================================================
             HEADER
         ====================================================== */}
 
@@ -218,7 +239,9 @@ function Trainers() {
             "
           >
             <div>
+
               <div className="mb-4 flex items-center gap-3">
+
                 <span className="h-px w-8 bg-orange-500 sm:w-10" />
 
                 <p
@@ -233,6 +256,7 @@ function Trainers() {
                 >
                   Our Team
                 </p>
+
               </div>
 
               <h2
@@ -249,15 +273,18 @@ function Trainers() {
               >
                 Meet The
                 <br />
+
                 <span className="text-orange-500">
                   Experts.
                 </span>
               </h2>
+
             </div>
 
-            {/* Counter */}
+            {/* COUNTER */}
 
             <div className="hidden text-right sm:block">
+
               <p
                 className="
                   text-[9px]
@@ -271,24 +298,30 @@ function Trainers() {
               </p>
 
               <p className="mt-1 text-2xl font-black text-white">
+
                 {trainers[activeIndex].id}
 
                 <span className="text-zinc-700">
                   {" "}
                   / {String(total).padStart(2, "0")}
                 </span>
+
               </p>
+
             </div>
+
           </div>
         </div>
 
-        {/* =====================================================
+        {/* ======================================================
             MAIN TRAINER AREA
         ====================================================== */}
 
         <div className="absolute inset-0">
 
-          {/* OUTER RING */}
+          {/* ====================================================
+              OUTER RING
+          ==================================================== */}
 
           <div
             className="
@@ -310,7 +343,9 @@ function Trainers() {
             "
           />
 
-          {/* INNER RING */}
+          {/* ====================================================
+              INNER RING
+          ==================================================== */}
 
           <div
             className="
@@ -330,228 +365,253 @@ function Trainers() {
             "
           />
 
-          {/* ===================================================
-              TRAINERS
+          {/* ====================================================
+              TRAINER CARDS
           ==================================================== */}
 
           {trainers.map((trainer, index) => {
-            const stageStart = index * stageSize;
+
+            const stageStart =
+              index * stageSize;
 
             const stageProgress = clamp(
-              (progress - stageStart) / stageSize
+              (progress - stageStart) /
+                stageSize
             );
 
-            /*
-             * ENTRY
-             *
-             * First 50%:
-             * center → outside
-             */
+            /* ==================================================
+               ANIMATION TIMELINE
+
+               0.00 → 0.42
+               CENTER → OUTSIDE
+
+               0.42 → 0.68
+               HOLD
+
+               0.68 → 1.00
+               CENTER ZOOM-OUT
+            ================================================== */
+
+            const ENTRY_END = 0.42;
+            const HOLD_END = 0.68;
 
             const entryProgress = clamp(
-              stageProgress / 0.5
+              stageProgress / ENTRY_END
+            );
+
+            const holdProgress = clamp(
+              (stageProgress - ENTRY_END) /
+                (HOLD_END - ENTRY_END)
+            );
+
+            const exitProgress = clamp(
+              (stageProgress - HOLD_END) /
+                (1 - HOLD_END)
             );
 
             const entryEase =
               easeOutCubic(entryProgress);
 
-            /*
-             * HOLD
-             *
-             * 50% → 72%
-             *
-             * Image stays outside.
-             * Small floating movement.
-             */
-
-            const holdProgress = clamp(
-              (stageProgress - 0.5) / 0.22
-            );
-
-            /*
-             * EXIT
-             *
-             * 72% → 100%
-             *
-             * Image zooms OUT and moves away.
-             */
-
-            const exitProgress = clamp(
-              (stageProgress - 0.72) / 0.28
-            );
-
             const exitEase =
               easeInOutCubic(exitProgress);
 
-            /*
-             * Position
-             */
+            /* ==================================================
+               POSITION
+
+               IMPORTANT:
+               Exit does NOT move sideways.
+
+               It stays centered around its current
+               position and zooms toward its own center.
+            ================================================== */
 
             let x =
-              trainer.position.x * entryEase;
+              trainer.position.x *
+              entryEase;
 
             let y =
-              trainer.position.y * entryEase;
+              trainer.position.y *
+              entryEase;
 
             let rotate =
-              trainer.position.rotate * entryEase;
+              trainer.position.rotate *
+              entryEase;
 
-            /*
-             * Small floating movement while visible.
-             */
+            /* ==================================================
+               VERY SMALL FLOATING MOVEMENT
+            ================================================== */
 
             if (
-              stageProgress > 0.5 &&
-              stageProgress < 0.72
+              stageProgress >= ENTRY_END &&
+              stageProgress <= HOLD_END
             ) {
+              const floatAmount = Math.sin(
+                holdProgress * Math.PI
+              );
+
               x +=
                 Math.sin(
-                  holdProgress * Math.PI
-                ) * 1.5;
+                  holdProgress * Math.PI * 2
+                ) *
+                1.2 *
+                floatAmount;
 
               y +=
                 Math.cos(
-                  holdProgress * Math.PI
-                ) * 1.2;
+                  holdProgress * Math.PI * 2
+                ) *
+                1 *
+                floatAmount;
             }
 
-            /*
-             * EXIT MOVEMENT
-             *
-             * Continue in the same direction,
-             * then move farther away.
-             */
+            /* ==================================================
+               EXIT
 
-            if (stageProgress > 0.72) {
-              const exitDistance = 18;
+               IMPORTANT CHANGE:
 
-              x +=
-                trainer.position.x > 0
-                  ? exitDistance * exitEase
-                  : -exitDistance * exitEase;
+               NO SIDE MOVEMENT.
 
-              y +=
-                trainer.position.y > 0
-                  ? exitDistance * exitEase
-                  : -exitDistance * exitEase;
+               The card remains at its position.
+
+               Only scale + opacity changes.
+
+               This creates:
+
+               CARD
+                 ↓
+               ZOOM OUT
+                 ↓
+               DISAPPEAR
+            ================================================== */
+
+            if (stageProgress > HOLD_END) {
+
+              /* Tiny rotation while disappearing */
 
               rotate +=
                 trainer.position.rotate > 0
-                  ? 8 * exitEase
-                  : -8 * exitEase;
+                  ? 2 * exitEase
+                  : -2 * exitEase;
             }
 
-            /*
-             * ENTRY SCALE
-             *
-             * Tiny center image → normal card.
-             */
+            /* ==================================================
+               ENTRY SCALE
+
+               Very small in center
+               → normal size outside
+            ================================================== */
 
             const entryScale =
               0.08 +
               entryEase * 0.92;
 
-            /*
-             * EXIT SCALE
-             *
-             * This creates the zoom-out effect.
-             *
-             * 1 → 0.72
-             */
+            /* ==================================================
+               EXIT SCALE
+
+               Normal size
+               →
+               smaller
+               →
+               tiny
+
+               This is the CENTER ZOOM-OUT.
+            ================================================== */
 
             const exitScale =
               1 -
-              exitEase * 0.28;
+              easeInCubic(exitProgress) *
+                0.82;
 
             const scale =
-              stageProgress < 0.72
+              stageProgress <= HOLD_END
                 ? entryScale
                 : exitScale;
 
-            /*
-             * OPACITY
-             */
+            /* ==================================================
+               OPACITY
+            ================================================== */
 
             let opacity = 0;
 
-            if (index < activeIndex) {
-              opacity = 0;
-            }
+            /* Current trainer */
 
             if (index === activeIndex) {
-              opacity = 1;
+
+              if (
+                stageProgress <= HOLD_END
+              ) {
+                opacity =
+                  clamp(
+                    entryProgress /
+                      0.25
+                  );
+              } else {
+
+                opacity =
+                  1 -
+                  easeInCubic(
+                    exitProgress
+                  );
+              }
             }
 
-            /*
-             * Fade out during exit.
-             */
-
-            if (index === activeIndex) {
-              opacity =
-                1 -
-                exitEase * 0.8;
-            }
-
-            /*
-             * Previous trainer.
-             *
-             * It stays slightly visible while
-             * the next trainer enters.
-             */
+            /* Previous trainer */
 
             if (index < activeIndex) {
-              const previousDistance =
+
+              const distance =
                 activeIndex - index;
 
-              if (previousDistance === 1) {
+              if (distance === 1) {
                 opacity =
-                  0.35 *
+                  0.12 *
                   (1 - stageProgress);
               } else {
                 opacity = 0;
               }
             }
 
-            /*
-             * Future trainers remain hidden.
-             */
+            /* Future trainer */
 
             if (index > activeIndex) {
               opacity = 0;
             }
 
-            /*
-             * Blur only during tiny center state.
-             *
-             * No expensive continuous blur.
-             */
-
-            const blur =
-              entryProgress < 0.3
-                ? 1.5
-                : 0;
-
-            /*
-             * RESPONSIVE CARD SIZE
-             */
+            /* ==================================================
+               MOBILE CARD SIZE
+            ================================================== */
 
             const width = isMobile
               ? "clamp(190px, 62vw, 280px)"
               : "clamp(240px, 23vw, 360px)";
 
-            /*
-             * Mobile movement.
-             */
+            /* ==================================================
+               MOBILE POSITION
 
-            const mobileMultiplier = 0.58;
+               Keep card closer to center.
+            ================================================== */
 
-            const actualX = isMobile
-              ? x * mobileMultiplier
-              : x;
+            const mobileMultiplier =
+              isMobile ? 0.58 : 1;
 
-            const actualY = isMobile
-              ? y * mobileMultiplier
-              : y;
+            const actualX =
+              x * mobileMultiplier;
+
+            const actualY =
+              y * mobileMultiplier;
+
+            /* ==================================================
+               SMALL CENTER BLUR
+
+               Only during entry.
+               No expensive continuous blur.
+            ================================================== */
+
+            const blur =
+              entryProgress < 0.25 &&
+              stageProgress < ENTRY_END
+                ? 1.5
+                : 0;
 
             return (
               <div
@@ -578,6 +638,16 @@ function Trainers() {
                     30 + index,
 
                   opacity,
+
+                  /*
+                   * transform-origin is CENTER.
+
+                   * Therefore when scale decreases,
+                   * the image zooms out from its center
+                   * instead of moving sideways.
+                   */
+                  transformOrigin:
+                    "center center",
 
                   transform: `
                     translate3d(
@@ -607,7 +677,10 @@ function Trainers() {
                     "none",
                 }}
               >
-                {/* IMAGE */}
+
+                {/* ==================================================
+                    IMAGE
+                ================================================== */}
 
                 <img
                   src={trainer.image}
@@ -629,7 +702,9 @@ function Trainers() {
                   "
                 />
 
-                {/* IMAGE GRADIENT */}
+                {/* ==================================================
+                    DARK GRADIENT
+                ================================================== */}
 
                 <div
                   className="
@@ -642,7 +717,9 @@ function Trainers() {
                   "
                 />
 
-                {/* TOP LIGHT */}
+                {/* ==================================================
+                    TOP LIGHT
+                ================================================== */}
 
                 <div
                   className="
@@ -656,7 +733,9 @@ function Trainers() {
                   "
                 />
 
-                {/* NUMBER */}
+                {/* ==================================================
+                    NUMBER
+                ================================================== */}
 
                 <div
                   className="
@@ -680,7 +759,9 @@ function Trainers() {
                   </span>
                 </div>
 
-                {/* INFORMATION */}
+                {/* ==================================================
+                    INFORMATION
+                ================================================== */}
 
                 <div
                   className="
@@ -692,6 +773,7 @@ function Trainers() {
                     sm:p-5
                   "
                 >
+
                   <p
                     className="
                       mb-1
@@ -732,9 +814,12 @@ function Trainers() {
                   >
                     {trainer.role}
                   </p>
+
                 </div>
 
-                {/* BORDER */}
+                {/* ==================================================
+                    BORDER
+                ================================================== */}
 
                 <div
                   className="
@@ -747,13 +832,14 @@ function Trainers() {
                     sm:rounded-3xl
                   "
                 />
+
               </div>
             );
           })}
 
-          {/* ===================================================
+          {/* ======================================================
               CENTER CIRCLE
-          ==================================================== */}
+          ====================================================== */}
 
           <div
             className="
@@ -765,6 +851,7 @@ function Trainers() {
               -translate-y-1/2
             "
           >
+
             <div
               className="
                 relative
@@ -782,6 +869,7 @@ function Trainers() {
                 sm:w-[100px]
               "
             >
+
               {/* Outer ring */}
 
               <div
@@ -823,6 +911,7 @@ function Trainers() {
               {/* Text */}
 
               <div className="relative text-center">
+
                 <p
                   className="
                     font-serif
@@ -849,14 +938,18 @@ function Trainers() {
                 >
                   Meet the team
                 </p>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
 
-        {/* =====================================================
+        {/* ========================================================
             BOTTOM
-        ====================================================== */}
+        ======================================================== */}
 
         <div
           className="
@@ -868,6 +961,7 @@ function Trainers() {
             sm:bottom-9
           "
         >
+
           <div
             className="
               mx-auto
@@ -880,6 +974,7 @@ function Trainers() {
               lg:px-12
             "
           >
+
             <p
               className="
                 hidden
@@ -896,6 +991,8 @@ function Trainers() {
               different approach to your goals.
             </p>
 
+            {/* Scroll indicator */}
+
             <div
               className="
                 ml-auto
@@ -904,6 +1001,7 @@ function Trainers() {
                 gap-3
               "
             >
+
               <span
                 className="
                   text-[7px]
@@ -926,6 +1024,7 @@ function Trainers() {
                   sm:w-24
                 "
               >
+
                 <div
                   className="
                     h-full
@@ -937,14 +1036,18 @@ function Trainers() {
                       `scaleX(${progress})`,
                   }}
                 />
+
               </div>
+
             </div>
+
           </div>
+
         </div>
 
-        {/* =====================================================
+        {/* ========================================================
             RIGHT INDICATOR
-        ====================================================== */}
+        ======================================================== */}
 
         <div
           className="
@@ -959,45 +1062,57 @@ function Trainers() {
             lg:flex
           "
         >
-          {trainers.map((trainer, index) => {
-            const active =
-              index === activeIndex;
 
-            return (
-              <div
-                key={trainer.id}
-                className="flex items-center gap-2"
-              >
-                <span
-                  className={`
-                    text-[8px]
-                    font-bold
-                    ${
-                      active
-                        ? "text-orange-500"
-                        : "text-zinc-700"
-                    }
-                  `}
+          {trainers.map(
+            (trainer, index) => {
+
+              const active =
+                index === activeIndex;
+
+              return (
+                <div
+                  key={trainer.id}
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                  "
                 >
-                  {trainer.id}
-                </span>
 
-                <span
-                  className={`
-                    h-px
-                    transition-all
-                    duration-300
-                    ${
-                      active
-                        ? "w-7 bg-orange-500"
-                        : "w-2 bg-zinc-800"
-                    }
-                  `}
-                />
-              </div>
-            );
-          })}
+                  <span
+                    className={`
+                      text-[8px]
+                      font-bold
+                      ${
+                        active
+                          ? "text-orange-500"
+                          : "text-zinc-700"
+                      }
+                    `}
+                  >
+                    {trainer.id}
+                  </span>
+
+                  <span
+                    className={`
+                      h-px
+                      transition-all
+                      duration-300
+                      ${
+                        active
+                          ? "w-7 bg-orange-500"
+                          : "w-2 bg-zinc-800"
+                      }
+                    `}
+                  />
+
+                </div>
+              );
+            }
+          )}
+
         </div>
+
       </div>
     </section>
   );
