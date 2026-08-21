@@ -67,7 +67,7 @@ function Navbar() {
     },
     {
       name: "Membership",
-      href: "#membership",
+      href: "#contact",
     },
     {
       name: "Contact",
